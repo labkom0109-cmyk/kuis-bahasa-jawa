@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kuis Bahasa Jawa</title>
+    <style>
+        :root {
+            --primary-color: #2b6cb0;
+            --secondary-color: #4299e1;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-color: #2d3748;
+            --success-color: #48bb78;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .meta-info {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .quiz-info {
+            display: flex;
+            justify-content: space-between;
+            background: #edf2f7;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .question-card {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .question-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .option-label:hover {
+            background-color: #ebf8ff;
+            border-color: var(--secondary-color);
+        }
+
+        .option-label input {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .footer-buttons {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #1a365d;
+        }
+
+        /* Result Section */
+        #result-section {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .score-big {
+            font-size: 64px;
+            font-weight: 900;
+            color: var(--success-color);
+            margin: 20px 0;
+        }
+
+        .summary-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: inline-block;
+            text-align: left;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Ujian Pilihan Ganda: Bahasa Jawa</h1>
+        <div class="meta-info">Sesuai Kisi-kisi: Unggah-ungguh & Aksara Jawa</div>
+    </header>
+
+    <div id="quiz-section">
+        <div class="quiz-info">
+            <span>Jumlah Soal: 40</span>
+            <span>Waktu: Mandiri</span>
+        </div>
+
+        <form id="quiz-form">
+            <div id="questions-container"></div>
+            
+            <div class="footer-buttons">
+                <button type="button" class="btn" onclick="submitQuiz()">Kirim & Hitung Nilai</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="result-section">
+        <h2>Hasil Ujian Anda</h2>
+        <div class="score-big" id="score-display">0</div>
+        <div class="summary-box">
+            <p><strong>Benar:</strong> <span id="correct-display">0</span></p>
+            <p><strong>Salah:</strong> <span id="wrong-display">0</span></p>
+            <p><strong>Total Soal:</strong> 40</p>
+        </div>
+        <div>
+            <button class="btn" onclick="window.location.reload()">Ulangi Kuis</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data Konten Soal 1-40
+    const quizData = [
+        // 1. Sinau Unggah-ungguh: Pacelathon
+        { q: "Ibu lagi dharan ing pawon, dene Bapak nembe... wonten ruang tamu.", a: "mangan", b: "nedhi", c: "dhahar", d: "nguntal", correct: "c" },
+        { q: "Roni kepingin nyuwun dhuwit tuku buku marang ibune. Ukara sing bener miturut unggah-ungguh yaiku...", a: "Bu, njaluk duwite nggo tuku buku.", b: "Ibu, kula nyuwun arta kangge tumbas buku.", c: "Bu, Ibu kagungan arta mboten? Kula badhe mundhut buku.", d: "Ibu, kula njaluk arta panjenengan badhe tuku buku.", correct: "b" },
+        { q: "Nalika liwat ing sangajenge tiyang sepuh ingkang nembe lenggahan, sikep kita ingkang sae yaiku...", a: "Mlaku biasa wae karo nyapa sembrono", b: "Mlayu banter supaya cepet rampung", c: "Mlaku rada mbungkuk sithik karo matur 'Nuwun sewu'", d: "Mlaku ronge-ronge karo dolanan HP", correct: "c" },
+        { q: "Simbah: 'Le, tulung jupukna kacamata ing nduwur meja iku.' <br>Bimo: '...'", a: "Iya mbah, sedhela.", b: "Inggih Mbah, sekedhap kula pendhetaken.", c: "Yo wis Mbah, jupuken dhewe.", d: "Kula mboten purun, Mbah.", correct: "b" },
+        { q: "Nalika dipunparingi hadiah utawi pitulungan dening tiyang sanes, kita kudu ngucapake...", a: "Matur nuwun", b: "Nuwun sewu", c: "Pangapunten", d: "Kula nuwun", correct: "a" },
+        { q: "'Pak, panjenengan benjing punapa badhe tindak dhateng Surabaya?' Ukara iki digunakake dening...", a: "Bapak marang anak dadi siji", b: "Anak marang wong tuwa", c: "Wong tuwa marang bocah cilik", d: "Kanca sakelompok sing wis akrab", correct: "b" },
+        { q: "Nalika kowe ora sengaja nyenggol kancamu nganti bukune tiba, ukara sing pas diucapake yaiku...", a: "Ora apa-apa ta? Sing ati-ati!", b: "Nuwun sewu, aku ora sengaja. Sepurane ya.", c: "Kok mbok deleh kono bukumu!", d: "Matur nuwun ya wis nibakake buku.", correct: "b" },
+        { q: "Rini: 'Kula nuwun, Bu RT. Punapa bener niki daleme Pak RW?' <br>Bu RT: 'Oh dudu, Nduk. Daleme Pak RW iku isih... ngalor maneh.'", a: "ngetan", b: "mrika", c: "mriki", d: "ngetan sithik", correct: "b" },
+        { q: "Yen kowe arep mlebu menyang ruang guru, unggah-ungguh sing bener yaiku...", a: "Langsung mlebu wae amarga arep nemoni guru", b: "Thuthuk lawang dhisik, banjur matur 'Kula nuwun/Sugeng enjang'", c: "Mlebu karo bengok-bengok celuk jenenge guru", d: "Ngintip saka cendhela banjur mlayu", correct: "b" },
+        { q: "'Mbah, jenengan wis... obat?' Tembung sing bener kanggo njangkepi pacelathon kasebut yaiku...", a: "ngombe", b: "ngunjuk", c: "nedha", d: "dhahar", correct: "b" },
+
+        // 2. Jenis-jenis Unggah-ungguh
+        { q: "Basa Jawa sing digunakake kanggo wong tuwa marang anak, utawa kanca sing wis akrab banget diarani basa...", a: "Krama Alus", b: "Krama Lugu", c: "Ngoko Lugu", d: "Ngoko Alus", correct: "c" },
+        { q: "Basa Ngoko Alus iku campuran antarane basa ngoko lan basa...", a: "Krama Alus / Krama Inggil", b: "Krama Lugu", c: "Basa Bagongan", d: "Basa Walikan", correct: "a" },
+        { q: "Tembung 'Tindak', 'Dhahar', lan 'Sare' iku kalebu tembung kosakata...", a: "Ngoko Lugu", b: "Krama Lugu", c: "Krama Inggil / Alus", d: "Jawa Kuna", correct: "c" },
+        { q: "Titikane (ciri-ciri) basa Ngoko Lugu yaiku...", a: "Kabeh tembunge nggunakake krama alus", b: "Tembunge campuran ngoko lan krama", c: "Kabeh tembunge nggunakake ngoko, tanpa campuran krama", d: "Nggunakake basa Indonesia sing di-Jawakake", correct: "c" },
+        { q: "Nalika murid matur marang Bapak utawa Ibu Guru, basa sing paling bener digunakake yaiku...", a: "Ngoko Lugu", b: "Ngoko Alus", c: "Krama Lugu", d: "Krama Alus", correct: "d" },
+        { q: "'Aku arep tuku buku ing pasar' yen diowahi dadi Krama Lugu sing bener yaiku...", a: "Kula badhe tumbas buku wonten peken.", b: "Kula badhe mundhut buku wonten peken.", c: "Dalem badhe mundhut buku wonten pasar.", d: "Aku badhe mundhut buku wonten pasar.", correct: "a" },
+        { q: "'Bapak nembe kemawon siram.' Ukara kasebut nggunakake jinis basa...", a: "Ngoko Lugu", b: "Ngoko Alus", c: "Krama Lugu", d: "Krama Alus", correct: "d" },
+        { q: "Sing mbedakake antarane Ngoko Lugu lan Ngoko Alus yaiku anane tembung... sing digunakake kanggo ngurmati wong sing diajak guneman.", a: "Krama Inggil", b: "Krama Lugu", c: "Dialek", d: "Basa Kawi", correct: "a" },
+        { q: "Ukara ing ngisor iki sing nggunakake Ngoko Alus yaiku...", a: "Kowe arep neng ngendi, Le?", b: "Bapak wis dhahar awan mau.", c: "Simbah sawed neda sekul.", d: "Ibu badhe tindak dhateng peken.", correct: "b" },
+        { q: "Panganggone basa Krama Lugu biasane digunakake dening...", a: "Wong tuwa marang anak pambarep", b: "Kanca sing wis akrab banget", c: "Wong sing durung kenal akrab utawa padha-padha ngurmati", d: "Anak marang wong tuwa kandha dhewe", correct: "c" },
+
+        // 3. Nulis Aksara Jawa (Nglegena & Sandhangan)
+        { q: "Aksara Jawa Nglegena (aksara legena) gunggunge (jumlahe) ana...", a: "15", b: "20", c: "25", d: "30", correct: "b" },
+        { q: "Sandhangan swara sing digunakake kanggo ngowahi swara 'a' dadi 'i' diarani...", a: "Suku", b: "Wulu", c: "Taling", d: "Pepet", correct: "b" },
+        { q: "Sandhangan swara sing unine 'u' diarani...", a: "Taling", b: "Layang", c: "Suku", d: "Cecak", correct: "c" },
+        { q: "Sandhangan 'Pepet' digunakake kanggo ngasilake swara...", a: "é (kaya ing tembung sate)", b: "è (kaya ing tembung bebek)", c: "e (kaya ing tembung seger)", d: "o (kaya ing tembung soto)", correct: "c" },
+        { q: "Yen nulis tembung 'tuku', sandhangan sing digunakake yaiku...", a: "Wulu", b: "Suku", c: "Taling", d: "Tarung", correct: "b" },
+        { q: "Aksara Jawa sing unine 'ba' lan 'ca' yen digabung dadi 'baca'. Aksara 'ba' ditandhani kanthi wujud...", a: "ꦧ", b: "ꦪ", c: "ꦕ", d: "ꦏ", correct: "a" },
+        { q: "Sandhangan taling ( ꦺ ) dununge utawa manggone ana ing... aksara sing diwenehi sandhangan.", a: "Ndhuwur", b: "Ngisor", c: "Ngarep/Saburunge", d: "Mburine", correct: "c" },
+        { q: "Kanggo nulis swara 'o', sandhangan sing digunakake yaiku kombinasi antarane...", a: "Wulu lan Suku", b: "Taling lan Tarung", c: "Pepet lan Cecak", d: "Taling lan Wignyan", correct: "b" },
+        { q: "Aksara Jawa ꦫ ꦤ (Ra - Na) yen diwenehi wulu ing aksara kaping pindho unine dadi...", a: "Rani", b: "Ranu", c: "Rane", d: "Rana", correct: "a" },
+        { q: "Sandhangan panyigeg wanda sing unine '-h' diarani...", a: "Layang", b: "Cecak", c: "Wignyan", d: "Pangkon", correct: "c" },
+
+        // 4. Manfaat Unggah-ungguh
+        { q: "Salah siji manfaat sing paling utama yen kita ngetrapake unggah-ungguh sajroning urip saben dina yaiku...", a: "Bisa entuk dhuwit sing akeh saka wong liya", b: "Dadi wong sing diajeni (dihormati) lan disenengi ing masyarakat", c: "Bisa pamer kapinteran marang kanca-kanca", d: "Supaya entuk biji sing apik wae ing sekolah", correct: "b" },
+        { q: "Wong sing ora gelem nggunakake unggah-ungguh nalika micara karo wong tuwa bakal diwenehi cap minangka wong sing...", a: "Pintar lan kendel", b: "Ora duwe tata krama / ora sopan", c: "Gaul lan modern", d: "Ngirit omongan", correct: "b" },
+        { q: "Manfaat nggunakake basa Krama Alus nalika matur karo wong tuwa utawa guru yaiku...", a: "Ngatonake rasa urmat lan ngajeni marang wong sing luwih sepuh", b: "Nduduhake yen awake dhewe iki wong sugih", c: "Supaya wong tuwa dadi wedi marang awake dhewe", d: "Kanggo nggampangake anggone njaluk jajan", correct: "a" },
+        { q: "Kanti ngetrapake unggah-ungguh lan tata krama, swasana ing kulwarga lan masyarakat bakal dadi...", a: "Rukun, tentrem, lan harmonis", b: "Rame lan kebak pasulayan", c: "Sepi kaya kuburan", d: "Kebak rasa cubriya siji lan sijine", correct: "a" },
+        { q: "Kenapa bocah saiki kudu tetep sinau unggah-ungguh basa Jawa?", a: "Supaya basa Jawa dadi basa internasional", b: "Kanggo nglestarekake budaya lan njaga sopan santun", c: "Amarga dipeksa dening aturan pemerintah wae", d: "Supaya bisa ngalahake budaya saka luar negeri", correct: "b" },
+
+        // 5. Nulis Aksara & Sandhangan lanjutan
+        { q: "Aksara Jawa ꦱ ꦥ (Sa - Pa) yen diwenehi sandhangan suku ing aksara kaping pindho unine dadi...", a: "Sapi", b: "Sapu", c: "Sapo", d: "Sape", correct: "b" },
+        { q: "Tembung 'sari' yen ditulis nganggo aksara Jawa mbutuhake sandhangan...", a: "Suku", b: "Pepet", c: "Wulu", d: "Taling", correct: "c" },
+        { q: "Sandhangan panyigeg wanda sing digunakake kanggo paten '-r' (kaya ing tembung pasar) diarani...", a: "Cecak", b: "Wignyan", c: "Layang", d: "Pangkon", correct: "c" },
+        { q: "Aksara Jawa ꦭ ꦭ (La - La) yen aksara pertama diwenehi taling lan tarung, banjur aksara kaping pindho diwenehi wulu, unine dadi...", a: "Lali", b: "Loli", c: "Lalu", d: "Lela", correct: "b" },
+        { q: "Fungsi utama saka sandhangan 'Pangkon' yaiku kanggo...", a: "Mateni aksara legena ing pungkasan ukara/tembung", b: "Menehi swara 'i' ing tengah tembung", c: "Ngganti swara 'o' dadi 'a'", d: "Miwiti nulis ukara anyar", correct: "a" }
+    ];
+
+    // Generate Soal ke HTML secara otomatis
+    const container = document.getElementById('questions-container');
+    
+    quizData.forEach((data, index) => {
+        const qNum = index + 1;
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        
+        card.innerHTML = `
+            <div class="question-text">${qNum}. ${data.q}</div>
+            <div class="options-container">
+                <label class="option-label">
+                    <input type="radio" name="q${qNum}" value="a"> A. ${data.a}
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q${qNum}" value="b"> B. ${data.b}
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q${qNum}" value="c"> C. ${data.c}
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q${qNum}" value="d"> D. ${data.d}
+                </label>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    // Fungsi Hitung Nilai
+    function submitQuiz() {
+        const form = document.getElementById('quiz-form');
+        let correctCount = 0;
+        let wrongCount = 0;
+        
+        // Cek jawaban
+        quizData.forEach((data, index) => {
+            const qNum = index + 1;
+            const selected = form.elements[`q${qNum}`].value;
+            
+            if (selected === data.correct) {
+                correctCount++;
+            } else {
+                wrongCount++;
+            }
+        });
+
+        // Hitung skor total skala 100
+        const finalScore = Math.round((correctCount / quizData.length) * 100);
+
+        // Tampilkan layar hasil
+        document.getElementById('quiz-section').style.display = 'none';
+        document.getElementById('result-section').style.display = 'block';
+        
+        // Update data nilai di halaman
+        document.getElementById('score-display').innerText = finalScore;
+        document.getElementById('correct-display').innerText = correctCount;
+        document.getElementById('wrong-display').innerText = wrongCount;
+
+        // Scroll kembali ke atas otomatis
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
+</script>
+
+</body>
+</html>
